@@ -10,4 +10,4 @@ View at: http://www.benlcollins.com/githubviz/githubviz.html
 
 ## What does it look like?
 
-![alt text](screenshots/githubviz_screenshot.png "GitHubViz screenshot")
+![alt text](screenshot/githubviz_screenshot.png "GitHubViz screenshot")
