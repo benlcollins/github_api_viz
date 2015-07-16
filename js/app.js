@@ -4,42 +4,29 @@ $(document).ready(function(){
 		
 		clearCanvas();
 		var searchterm = $("#term").val();
-		// var searchterm = "benlcollins";
 
 		$.get("https://api.github.com/users/" + searchterm, function(data, status){
 			console.log(status);
-			// console.log(X-RateLimit-Remaining);
+
 			var userData = data;
 			if (status === "success") {
-				// console.log(userData);
 
 				function addUserData() {
-					var username = "<h3>" + userData.login + "</h3>";
-					var repos = "<li>" + userData.login + " has " + userData.public_repos 
-						+ " public repos. Would you like to see them?</li>";
-					var repoURL = "<li>Repos URL: <a href='https://api.github.com/users/" + userData.login 
-						+ "/repos?per_page=100'>" + userData.repos_url + "</a></li>";
+					var username = "<h3>" + userData.login + " has " 
+						+ userData.public_repos + " public repos:</h3><br>";
 					
 					$("ul").empty(); // clear out any previous displays
 					
-					// $("#username").append(username);  // add the new data
-					$("#userDetails").append(repos);  // add the new data
-
-					$("#userDetails").append("<button id='searchRepo' class='button tiny radius'>View Repos</button>");
+					$("#username").append(username);  // add the new data
 				}
-				addUserData();
-				
-			};
 
-			$("#searchRepo").click(function(){
+				addUserData();
 
 				$.get("https://api.github.com/users/" + searchterm + "/repos", function(data, status){
 					console.log(status);
 					var repoData = data;
 					console.log(data);
 					if (status === "success") {
-						$("#repoDetails").prepend("<h4>Repos:</h4>");
-						// debugger;
 						for (var i = 0; i < repoData.length; i++) {
 							$("#repoDetails").append("<li id='repo" + i + "'>" + repoData[i].name + "</li>");
 						};
@@ -50,7 +37,7 @@ $(document).ready(function(){
 				// setup for d3 charting
 				// basic SVG setup
 				var dataset = [];
-				var margin = {top: 20, right: 20, bottom: 60, left: 100};           
+				var margin = {top: 70, right: 20, bottom: 60, left: 100};           
 				var width = 600 - margin.left - margin.right;
 				var height= 500 - margin.top - margin.bottom;
 				var w = width;
@@ -74,7 +61,7 @@ $(document).ready(function(){
 				// define the y scale
 				var yScale = d3.scale.linear()
 				    .domain([0, d3.max(dataset, function(d) {return d.value; })])
-				    .range([h,0]);
+				    .range([h,margin.top]);
 
 				// define the y axis
 				var yAxis = d3.svg.axis().scale(yScale).orient("left");
@@ -90,7 +77,7 @@ $(document).ready(function(){
 						.attr("class", "y axis label")
 						.attr("text-anchor", "middle")
 						.attr("transform", "translate(15," + (h / 2) + ")rotate(-90)")
-						.text("Number of lines of code");
+						.text("Lines of code");
 
 				// draw the y axis
 				svg.append("g")
@@ -105,6 +92,13 @@ $(document).ready(function(){
 						.attr("transform", "translate(" + (w / 2) + "," + (h + (margin.bottom / 2) + 10) + ")")
 						.text("Language");
 
+				// add a title to the chart
+				svg.append("text")
+						.attr("class", "chartTitle")
+						.attr("text-anchor", "middle")
+						.attr("transform", "translate(" + (w / 2) + ",20)")
+						.text("GitHub Repo");
+
 
 				// function to handle click on any of the repo names in the list
 				// it redraws (or draws first time) the chart
@@ -112,6 +106,7 @@ $(document).ready(function(){
 					
 					// get the chosen repo id by reference to the id of the element in list that was clicked
 					var repoChoice = $("#"+this.id).html();
+				
 
 					// go grab the language details for that repo from github api
 					$.get("https://api.github.com/repos/" + searchterm + "/" + repoChoice + "/languages", function(data, status){
@@ -139,7 +134,7 @@ $(document).ready(function(){
 
 							// update the y scale
 							yScale.domain([0, d3.max(dataset, function(d) {return d.value; })])
-							    .range([h,0]);
+							    .range([h,margin.top]);
 
 							// update the x axis
 							xAxis.scale(xScale).orient("bottom");
@@ -199,6 +194,10 @@ $(document).ready(function(){
 									.duration(750)
 									.call(yAxis);
 
+							// update the title
+							svg.select(".chartTitle")
+									.text(repoChoice);
+
 							// end of d3
 
 							};
@@ -207,8 +206,7 @@ $(document).ready(function(){
 					}); // end of click function on repo Details
 
 				}); // end of ajax call for github repos
-			});	// end of click function on searchRepo
-
+			};  // end of if statement if the github api call is successful and returns user info
 		});  // end of ajax call to github
 	});  // end of click function on search
 	

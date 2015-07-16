@@ -22,3 +22,9 @@ input {
 .center-text {
 	text-align: center;
 }
+li {
+	cursor: pointer;
+}
+li:hover {
+	background-color: #FFFACD;
+}
