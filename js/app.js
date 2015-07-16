@@ -35,7 +35,7 @@ $(document).ready(function(){
 					console.log(data);
 					if (status === "success") {
 						$("#repoDetails").prepend("<h3>Repos:</h3>");
-						debugger;
+						// debugger;
 						for (var i = 0; i < repoData.length; i++) {
 							$("#repoDetails").append("<li id='repo" + i + "'>" + repoData[i].name + "</li>");
 						};
@@ -194,7 +194,6 @@ $(document).ready(function(){
 									.duration(750)
 									.call(yAxis);
 
-
 							// end of d3
 
 							};
@@ -214,6 +213,7 @@ $(document).ready(function(){
 		$("h3").remove(); // clear out heading "Repos"
 		$("#searchRepo").remove(); // clear out button
 		d3.selectAll("svg").remove(); // clear out chart
+		$("#term").val('');
 	});
 
 });
