@@ -18,7 +18,7 @@ $(document).ready(function(){
 					$("ul").empty(); // clear out any previous displays
 					
 					$("#username").append(username);  // add the new data
-				}
+				};
 
 				addUserData();
 
