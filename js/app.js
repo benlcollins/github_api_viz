@@ -21,11 +21,11 @@ $(document).ready(function(){
 					
 					$("#userDetails").append(username, repos, repoURL);  // add the new data
 
-					$("#userDetails").append("<button id='searchRepo'>View Repos?</button>");
+					$("#userDetails").append("<button id='searchRepo'>View Repos</button>");
 				}
 				addUserData();
 				
-			}
+			};
 
 			$("#searchRepo").click(function(){
 
@@ -35,87 +35,167 @@ $(document).ready(function(){
 					console.log(data);
 					if (status === "success") {
 						$("#repoDetails").prepend("<h3>Repos:</h3>");
+						debugger;
 						for (var i = 0; i < repoData.length; i++) {
 							$("#repoDetails").append("<li id='repo" + i + "'>" + repoData[i].name + "</li>");
 						};
 
 					}; // end of if statment
 
-					$("#repoDetails").children().click(function(){
-						var repoChoice = $("#"+this.id).html();
 
-						$.get("https://api.github.com/repos/" + searchterm + "/" + repoChoice + "/languages", function(data, status){
-							console.log(status);
-							var langData = data;
-							if (status === "success") {
-								// rawDataD3 = langData;
-								// console.log(rawDataD3);
+				// setup for d3 charting
+				// basic SVG setup
+				var dataset = [];
+				var margin = {top: 20, right: 20, bottom: 60, left: 100};           
+				var width = 600 - margin.left - margin.right;
+				var height= 500 - margin.top - margin.bottom;
+				var w = width;
+				var h = height;
 
-								// start of d3
+				//Create SVG element
+				var svg = d3.select("body")
+				    .append("svg")
+				    .attr("width", w + margin.left + margin.right)
+				    .attr("height", h + margin.top + margin.bottom);
 
-								// basic SVG setup
-								var margin = {top: 20, right: 20, bottom: 30, left: 50};           
-								var width = 600 - margin.left - margin.right;
-								var height= 500 - margin.top - margin.bottom;
-								var w = width;
-								var h = height;
+				// define the x scale
+				var xScale = d3.scale.ordinal()
+				    .domain(dataset.map(function (d) {return d.key; }))
+				    .rangeRoundBands([margin.left, w], 0.05);
 
-								var keys = Object.keys(langData);
-								var dataset = [];
-								for (var j = 0; j < keys.length; j++ ) {
-									var item = new Object();
-									item.key = keys[j];
-									item.value = langData[keys[j]];
-									dataset.push(item);
-								};
+				// define the x axis
+				var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
 
-								var xScale = d3.scale.ordinal()
-								    .domain(dataset.map(function (d) {return d.key; }))
-								    .rangeRoundBands([margin.left, width], 0.05);
+				// define the y scale
+				var yScale = d3.scale.linear()
+				    .domain([0, d3.max(dataset, function(d) {return d.value; })])
+				    .range([h,0]);
 
-								var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+				// define the y axis
+				var yAxis = d3.svg.axis().scale(yScale).orient("left");
 
-								var yScale = d3.scale.linear()
-								    .domain([0, d3.max(dataset, function(d) {return d.value; })])
-								    .range([h - margin.bottom,0]);
+				// draw the x axis
+				svg.append("g")
+				    .attr("class", "xaxis")
+				    .attr("transform", "translate(0," + h + ")")
+				    .call(xAxis);
 
-								var yAxis = d3.svg.axis().scale(yScale).orient("left");
+				// add the y axis label
+				svg.append("text")
+						.attr("class", "y axis label")
+						.attr("text-anchor", "middle")
+						.attr("transform", "translate(15," + (h / 2) + ")rotate(-90)")
+						.text("Number of lines of code");
 
+				// draw the y axis
+				svg.append("g")
+				    .attr("class", "yaxis")
+				    .attr("transform","translate(" + margin.left + ",0)")
+				    .call(yAxis);
 
-								//Create SVG element
-								var svg = d3.select("body")
-								    .append("svg")
-								    .attr("width", w)
-								    .attr("height", h);
-
-								//Create bars
-								svg.selectAll("rect")
-								    .data(dataset)
-								.enter().append("rect")
-								    .attr("x", function(d, i) {
-								        return xScale(d.key);
-								    })
-								    .attr("y", function(d) {
-								        return yScale(d.value);
-								    })
-								    .attr("width", xScale.rangeBand())
-								    .attr("height", function(d) {
-								        return h - yScale(d.value) - margin.bottom;
-								    })
-								    .attr("fill", "steelblue");
-
-								svg.append("g")
-								    .attr("class", "x axis")
-								    .attr("transform", "translate(0," + (h - margin.bottom) + ")")
-								    .call(xAxis);
-
-								svg.append("g")
-								    .attr("class", "y axis")
-								    .attr("transform","translate(" + margin.left + ",0)")
-								    .call(yAxis);
+				// add the x axis label
+				svg.append("text")
+						.attr("class", "x axis label")
+						.attr("text-anchor", "middle")
+						.attr("transform", "translate(" + (w / 2) + "," + (h + (margin.bottom / 2) + 10) + ")")
+						.text("Language");
 
 
-								// end of d3
+				// function to handle click on any of the repo names in the list
+				// it redraws (or draws first time) the chart
+				$("#repoDetails").children().click(function(){
+					
+					// get the chosen repo id by reference to the id of the element in list that was clicked
+					var repoChoice = $("#"+this.id).html();
+
+					// go grab the language details for that repo from github api
+					$.get("https://api.github.com/repos/" + searchterm + "/" + repoChoice + "/languages", function(data, status){
+						console.log(status);
+
+						// assign the returned data to variable called langData
+						var langData = data;
+
+						// if api call was successful, put the returned data object into an array of objects
+						// e.g. [{key: "JavaScript", value: 20532}, {key: "HTML", value: 4978}]
+						if (status === "success") {
+							dataset = [];
+							var keys = Object.keys(langData);
+							
+							for (var j = 0; j < keys.length; j++ ) {
+								var item = new Object();
+								item.key = keys[j];
+								item.value = langData[keys[j]];
+								dataset.push(item);
+							};
+
+							// update the x scale
+							xScale.domain(dataset.map(function (d) {return d.key; }))
+							    .rangeRoundBands([margin.left, width], 0.05);
+
+							// update the y scale
+							yScale.domain([0, d3.max(dataset, function(d) {return d.value; })])
+							    .range([h,0]);
+
+							// update the x axis
+							xAxis.scale(xScale).orient("bottom");
+
+							// update the y axis
+							yAxis.scale(yScale).orient("left");
+
+							//Create bars and labels
+						  bars = svg.selectAll("rect").data(dataset);
+						  barLabels = svg.selectAll("text").data(dataset);
+
+						  // add new bars
+						  bars.enter()
+						      .append("rect")
+						      .attr("x", function(d, i) {
+							        return xScale(d.key);
+							    })
+							    .attr("y", function(d) {
+							        return yScale(d.value);
+							    })
+							    .attr("width", xScale.rangeBand())
+							    .attr("height", function(d) {
+							        return h - yScale(d.value);
+							    })
+							    .attr("fill", "steelblue");
+
+							// remove bars as necessary
+							bars.exit()
+						      .transition()
+						      .duration(500)
+						      .attr("x", w)
+						      .remove();
+
+						  // update the bars
+							bars.transition()
+							    .duration(750)
+							    .attr("x", function(d,i) {
+							        return xScale(d.key);
+							    })
+							    .attr("y", function(d) {
+							        return yScale(d.value);
+							    })
+							    .attr("width", xScale.rangeBand())
+							    .attr("height", function(d) {
+							        return h - yScale(d.value);
+							    });
+
+						  // update the x axis
+							svg.select(".xaxis")
+									.transition()
+									.duration(750)
+							    .call(xAxis);
+
+							// update the y axis
+							svg.select(".yaxis")
+									.transition()
+									.duration(750)
+									.call(yAxis);
+
+
+							// end of d3
 
 							};
 
@@ -128,13 +208,12 @@ $(document).ready(function(){
 		});  // end of ajax call to github
 	});  // end of click function on search
 
+	// function to clear the elements out
 	$("#clear").click(function(){
-		$("li").remove();
-		$("h3").remove();
-		$("#searchRepo").remove();
-		// $("ul").fadeOut();
-		d3.selectAll("svg").remove();
+		$("li").remove(); // clear out list items
+		$("h3").remove(); // clear out heading "Repos"
+		$("#searchRepo").remove(); // clear out button
+		d3.selectAll("svg").remove(); // clear out chart
 	});
 
-
-});  // end of document ready
+});

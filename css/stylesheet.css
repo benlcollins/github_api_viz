@@ -1,10 +1,13 @@
-.axis path,
-.axis line {
+.xaxis path,
+.xaxis line,
+.yaxis path,
+.yaxis line {
 	fill: none;
 	stroke: black;
 	shape-rendering: crispEdges;
 }
-.axis text {
+.xaxis text,
+.yaxis text {
 	font-family: sans-serif;
 	font-size: 11px;
 }
