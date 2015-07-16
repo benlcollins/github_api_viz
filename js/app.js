@@ -77,7 +77,7 @@ $(document).ready(function(){
 						.attr("class", "y axis label")
 						.attr("text-anchor", "middle")
 						.attr("transform", "translate(15," + (h / 2) + ")rotate(-90)")
-						.text("Lines of code");
+						.text("Number of characters");
 
 				// draw the y axis
 				svg.append("g")
