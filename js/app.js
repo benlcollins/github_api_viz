@@ -2,26 +2,30 @@ $(document).ready(function(){
 
 	$("#search").click(function(){
 		
+		clearCanvas();
 		var searchterm = $("#term").val();
 		// var searchterm = "benlcollins";
 
 		$.get("https://api.github.com/users/" + searchterm, function(data, status){
 			console.log(status);
+			// console.log(X-RateLimit-Remaining);
 			var userData = data;
 			if (status === "success") {
 				// console.log(userData);
 
 				function addUserData() {
-					var username = "<li>Username: " + userData.login + "</li>";
-					var repos = "<li>Number of public repos: " + userData.public_repos + "</li>";
-					var repoURL = "<li>Repos URL: <a href='https://api.github.com/users/" + userData.login + "/repos'>" + 
-						userData.repos_url + "</a></li>";
+					var username = "<h3>" + userData.login + "</h3>";
+					var repos = "<li>" + userData.login + " has " + userData.public_repos 
+						+ " public repos. Would you like to see them?</li>";
+					var repoURL = "<li>Repos URL: <a href='https://api.github.com/users/" + userData.login 
+						+ "/repos?per_page=100'>" + userData.repos_url + "</a></li>";
 					
 					$("ul").empty(); // clear out any previous displays
 					
-					$("#userDetails").append(username, repos, repoURL);  // add the new data
+					// $("#username").append(username);  // add the new data
+					$("#userDetails").append(repos);  // add the new data
 
-					$("#userDetails").append("<button id='searchRepo'>View Repos</button>");
+					$("#userDetails").append("<button id='searchRepo' class='button tiny radius'>View Repos</button>");
 				}
 				addUserData();
 				
@@ -34,7 +38,7 @@ $(document).ready(function(){
 					var repoData = data;
 					console.log(data);
 					if (status === "success") {
-						$("#repoDetails").prepend("<h3>Repos:</h3>");
+						$("#repoDetails").prepend("<h4>Repos:</h4>");
 						// debugger;
 						for (var i = 0; i < repoData.length; i++) {
 							$("#repoDetails").append("<li id='repo" + i + "'>" + repoData[i].name + "</li>");
@@ -54,6 +58,7 @@ $(document).ready(function(){
 
 				//Create SVG element
 				var svg = d3.select("body")
+				var svg = d3.select("div#chart")
 				    .append("svg")
 				    .attr("width", w + margin.left + margin.right)
 				    .attr("height", h + margin.top + margin.bottom);
@@ -206,14 +211,21 @@ $(document).ready(function(){
 
 		});  // end of ajax call to github
 	});  // end of click function on search
+	
+	// respond to click on clear button by calling the clearCanvas button
+	$("#clear").click(function(){
+		$("#term").val(''); // extra detail to clear out input box
+		clearCanvas();
+	});
 
 	// function to clear the elements out
-	$("#clear").click(function(){
+	var clearCanvas = function(){
 		$("li").remove(); // clear out list items
-		$("h3").remove(); // clear out heading "Repos"
+		$("h3").remove(); // clear out username heading
+		$("h4").remove(); // clear out heading "Repos"
 		$("#searchRepo").remove(); // clear out button
 		d3.selectAll("svg").remove(); // clear out chart
-		$("#term").val('');
-	});
+		
+	};
 
 });

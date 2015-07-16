@@ -1,3 +1,6 @@
+/** {
+     border: solid red 1px !important;
+}*/
 .xaxis path,
 .xaxis line,
 .yaxis path,
@@ -10,4 +13,12 @@
 .yaxis text {
 	font-family: sans-serif;
 	font-size: 11px;
+}
+input {
+	width: 100%;
+	font-size: 14px;
+	line-height: 2em;
+}
+.center-text {
+	text-align: center;
 }
