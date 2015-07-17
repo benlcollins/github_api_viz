@@ -2,6 +2,9 @@ $(document).ready(function(){
 
 	$("#search").click(function(){
 
+		// clear out previous results if needed
+		clearCanvas();
+
 		// find out the searchterm
 		var searchterm = $("#term").val() ? $("#term").val() : "github";
 
@@ -231,6 +234,22 @@ $(document).ready(function(){
 			.text("GitHub Repo");
 
 	}); // end of search click function
+
+	// respond to click on clear button
+	$("#clear").click(function(){
+		$("#term").val(''); // extra detail to clear out input box
+		clearCanvas();
+	});
+
+	// clear the elements out
+	var clearCanvas = function(){
+		$("li").remove(); // clear out list items
+		$("h3").remove(); // clear out username heading
+		$("h4").remove(); // clear out heading "Repos"
+		$("#searchRepo").remove(); // clear out button
+		d3.selectAll("svg").remove(); // clear out chart
+		
+	};
 });
 
 
