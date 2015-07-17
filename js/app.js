@@ -1,5 +1,6 @@
 $(document).ready(function(){
 
+	// setupChart();
 	$("#search").click(function(){
 		
 		clearCanvas();
@@ -33,7 +34,6 @@ $(document).ready(function(){
 
 					}; // end of if statment
 
-
 				// setup for d3 charting
 				// basic SVG setup
 				var dataset = [];
@@ -44,7 +44,6 @@ $(document).ready(function(){
 				var h = height;
 
 				//Create SVG element
-				var svg = d3.select("body")
 				var svg = d3.select("div#chart")
 				    .append("svg")
 				    .attr("width", w + margin.left + margin.right)
@@ -209,7 +208,7 @@ $(document).ready(function(){
 			};  // end of if statement if the github api call is successful and returns user info
 		});  // end of ajax call to github
 	});  // end of click function on search
-	
+
 	// respond to click on clear button by calling the clearCanvas button
 	$("#clear").click(function(){
 		$("#term").val(''); // extra detail to clear out input box
@@ -227,3 +226,9 @@ $(document).ready(function(){
 	};
 
 });
+
+
+
+
+
+
