@@ -3,7 +3,7 @@ $(document).ready(function(){
 	$("#search").click(function(){
 
 		// find out the searchterm
-		var searchterm = $("#term").val() ? $("#term").val() : "benlcollins";
+		var searchterm = $("#term").val() ? $("#term").val() : "github";
 
 		// get user
 		function getUserData(callback) {
