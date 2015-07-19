@@ -6,7 +6,7 @@ $(document).ready(function(){
 		clearCanvas();
 
 		// find out the searchterm
-		var searchterm = $("#term").val() ? $("#term").val() : "github";
+		var searchterm = $("#term").val() ? $("#term").val() : "benlcollins";
 
 		// get user
 		function getUserData(callback) {
@@ -159,6 +159,48 @@ $(document).ready(function(){
 			svg.select(".chartTitle")
 				.text(repo);
 
+			// add tooltip
+			bars.on("mouseover",function(d){
+				
+				// add blank tooltip
+				svg.append("text")
+					.attr("id","tooltip");
+
+				// get the x and y coords
+				var xPosition = parseFloat(d3.select(this).attr("x")) + xScale.rangeBand()/2;
+				var yPosition = parseFloat(d3.select(this).attr("y")) + 18;
+
+				// add the tooltip
+				svg.select("#tooltip")
+					.attr("x",xPosition)
+					.attr("y",function(){
+						// if value is less than 10% of max, show tooltip above bar
+						var mx = d3.max(dataset, function(d) {return d.value; });
+						if (d.value < 0.1 * mx) {
+							return yPosition - 22;
+						} else {
+							return yPosition;
+						};
+					})
+					.attr("text-anchor","middle")
+					.attr("fill",function(){
+						// if value is less than 10% of max, make tooltip black
+						var mx = d3.max(dataset, function(d) {return d.value; });
+						if (d.value < 0.1 * mx) {
+							return "black";
+						} else {
+							return "white";
+						};
+					})
+					.attr("font-family","sans-serif")
+					.attr("font-size","12px")
+					.text(d.value);
+
+			})
+			.on("mouseout",function(){
+				d3.select("#tooltip").remove();
+			});
+
 		}; // end of the showLangs function
 
 
@@ -168,7 +210,6 @@ $(document).ready(function(){
 
 		
 		// setup for the d3 chart
-		
 		// basic SVG setup
 		var dataset = [];
 		var margin = {top: 70, right: 20, bottom: 60, left: 100};           
@@ -232,6 +273,8 @@ $(document).ready(function(){
 			.attr("text-anchor", "middle")
 			.attr("transform", "translate(" + (w / 2) + ",20)")
 			.text("GitHub Repo");
+
+		
 
 	}); // end of search click function
 
