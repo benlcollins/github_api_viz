@@ -1,0 +1,18 @@
+.xaxis path,
+.xaxis line,
+.yaxis path,
+.yaxis line {
+	fill: none;
+	stroke: black;
+	shape-rendering: crispEdges;
+}
+.xaxis text,
+.yaxis text {
+	font-family: sans-serif;
+	font-size: 11px;
+}
+input {
+	width: 250px;
+	font-size: 14px;
+	line-height: 2em;
+}
