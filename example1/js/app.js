@@ -91,7 +91,7 @@ $(document).ready(function(){
 
   		// update the x scale
 			xScale.domain(dataset.map(function (d) {return d.key; }))
-			  .rangeRoundBands([margin.left, width], 0.05);
+			  .rangeRoundBands([margin.left, w], 0.05);
 
 			// update the y scale
 			yScale.domain([0, d3.max(dataset, function(d) {return d.value; })])
@@ -213,10 +213,8 @@ $(document).ready(function(){
 		// basic SVG setup
 		var dataset = [];
 		var margin = {top: 70, right: 20, bottom: 60, left: 100};           
-		var width = 600 - margin.left - margin.right;
-		var height= 500 - margin.top - margin.bottom;
-		var w = width;
-		var h = height;
+		var w = 600 - margin.left - margin.right;
+		var h = 500 - margin.top - margin.bottom;
 
 		//Create SVG element
 		var svg = d3.select("div#chart")
