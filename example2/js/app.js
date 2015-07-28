@@ -1,18 +1,8 @@
-// array of events
-var events = [
-	{id: "2985400682", sha: "e34cdda9fff7d68cfa0197c28ed69ae706721cd9"},
-	{id: "2985397832", sha: "47c849e29df41c3c3ec83a32c7337eebefd572c8"},
-	{id: "2984031811", sha: "e34cdda9fff7d68cfa0197c28ed69ae706721cd9"},
-	{id: "2984018363", sha: "bc39455d155b324a250dabf4a0e1c93a76697a35"},
-	{id: "2984006103", sha: "e34711a7a833d261566d221bdafcbe2fce88e88d"},
-	{id: "2984002003", sha: "b99d8a1a2a76bc83eaad7dd8575d7a5acc0e3c3f"}
-];
-
 $(document).ready(function(){
 	$("#search").click(function(){
 
-		// var searchterm = $("#username").val() + "/" + $("#reponame").val();
-		var searchterm = "benlcollins/github_api_viz"
+		var searchterm = $("#username").val() + "/" + $("#reponame").val();
+		// var searchterm = "benlcollins/github_api_viz"
 
 		function getJSON(url) {
 			return get(url).then(JSON.parse);
@@ -54,7 +44,7 @@ $(document).ready(function(){
 						// console.log(item.id, item.payload.commits[0].url);
 					} 
 					else {
-						console.log(item.id, "This id has no commits");
+						console.log(item.id, " has no commits");
 					};
 				});
 				// console.log(dataset);
@@ -78,38 +68,101 @@ $(document).ready(function(){
 						// console.log(deletions);
 						// problem is that this is part of the loop, so additions/deletions arrays grow by 1 each iteration
 
-						// could do some d3 stuff here?
+						// setup for the d3 chart
+						// dimensions setup
+						var dataArray = [];
+						var additionsDeletions = [];
+						stats.forEach(function(d){ return additionsDeletions.push([d.additions,d.deletions]);});
+						var flattened = additionsDeletions.reduce(function(a,b){ return a.concat(b); });
 
+						var margin = {top: 20, right: 20, bottom: 20, left: 40};           
+						var w = 600 - margin.left - margin.right;
+						var h = 500 - margin.top - margin.bottom;
+
+						// define the svg element
+						var svg = d3.select("div#chart")
+							.append("svg")
+							.attr("width", w + margin.left + margin.right)
+							.attr("height", h + margin.top + margin.bottom);
+
+						// define the scales
+						var xScale = d3.scale.ordinal()
+							.domain(dataArray.map(function(d){ return d.id; }))
+							.rangeRoundBands([margin.left, w], 0.5);
+
+						var yScale = d3.scale.linear()
+							.domain(d3.extent(flattened, function(d){ return d; }))
+							.range([h,margin.top]);
+
+						// define the axes
+						var xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+						var yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+						// draw the axes
+						svg.append("g")
+								.attr("class","xaxis")
+							.append("line")
+								.attr("y1",yScale(0))
+								.attr("y2",yScale(0))
+								.attr("x1",margin.left)
+								.attr("x2",w);
+
+						svg.append("g")
+							.attr("class","yaxis")
+							.attr("transform","translate(" + margin.left + ",0)")
+							.call(yAxis);
+
+
+
+
+						// the dynamic stuff
 						// update the scales
-						xScale.domain([0,d3.max(stats, function(d,i){ return i; })])
-							.range([margin.left,w]);
+						xScale.domain(stats.map(function(d){ return d.id; }))
+							.rangeRoundBands([margin.left,w], 0.05);
 
-						yScale.domain([d3.min(stats, function(d){ return d.deletions; }),
-							d3.max(stats, function(d){ return d.additions; })])
+						yScale.domain(d3.extent(flattened, function(d){ return d; }));
 
 						// update the axes
 						xAxis.scale(xScale);
 						yAxis.scale(yScale);
 
 						// create bars
-						bars = svg.selectAll("rect").data(stats);
+						barsUp = svg.selectAll("rect").data(stats);
+						barsDown = svg.selectAll("rect").data(stats);
 
 						// add new bars
-						bars.enter()
+						barsUp.enter()
 							.append("rect")
 							.attr("x", function(d,i){
-								return xScale(i);
+								return xScale(d.id);
 							})
 							.attr("y", function(d,i){
 								return yScale(d.additions);
 							})
 							.attr("width", function(d,i) {
-								return xScale(i);
+								return xScale.rangeBand();
 							})
 							.attr("height", function(d){
-								return h - yScale(d.additions);
+								// debugger;
+								return yScale(0) - yScale(d.additions);
 							})
 							.attr("fill","steelblue");
+
+						barsDown.enter()
+							.append("rect")
+							.attr("x", function(d,i){
+								return xScale(d.id);
+							})
+							.attr("y", function(d,i){
+								return yScale(0);
+							})
+							.attr("width", function(d,i) {
+								return xScale.rangeBand();
+							})
+							.attr("height", function(d){
+								return yScale(0) - yScale(-d.deletions);
+							})
+							.attr("fill","indianred");
 
 						// remove bars as necessary
 
@@ -133,43 +186,7 @@ $(document).ready(function(){
 		});
 	});
 
-	// setup for the d3 chart
-	// dimensions setup
-	var dataArray = [];
-	var margin = {top: 70, right: 20, bottom: 60, left: 100};           
-	var w = 600 - margin.left - margin.right;
-	var h = 500 - margin.top - margin.bottom;
-
-	// define the svg element
-	var svg = d3.select("div#chart")
-		.append("svg")
-		.attr("width", w + margin.left + margin.right)
-		.attr("height", h + margin.top + margin.bottom);
-
-	// define the scales
-	var xScale = d3.scale.linear()
-		.domain([0, d3.max(dataArray, function(d,i){ return i; })])
-		.range([margin.left, w]);
-
-	var yScale = d3.scale.linear()
-		.domain([d3.min(dataArray, function(d){ return d.deletions; }), 
-			d3.max(dataArray, function(d){ return d.additions; })])
-		.range([h,margin.top]);
-
-	// define the axes
-	var xAxis = d3.svg.axis().scale(xScale);
-	var yAxis = d3.svg.axis().scale(yScale).orient("left");
-
-	// draw the axes
-	svg.append("g")
-		.attr("class","xaxis")
-		.attr("transform","translate(0,"+ h + ")")
-		.call(xAxis);
-
-	svg.append("g")
-		.attr("class","yaxis")
-		.attr("transform","translate(" + margin.left + ",0)")
-		.call(yAxis);		
+	
 
 });
 
