@@ -1,12 +1,12 @@
 $(document).ready(function(){
 	$("#search").click(function(){
 
-		var searchterm = $("#username").val() + "/" + $("#reponame").val();
-		// var searchterm = "benlcollins/github_api_viz"
+		// var searchterm = $("#username").val() + "/" + $("#reponame").val();
+		var searchterm = "benlcollins/javascript_experiments";
 
 		function getJSON(url) {
 			return get(url).then(JSON.parse);
-		}
+		};
 
 		function get(url){
 			return new Promise(function(resolve,reject){
@@ -49,6 +49,18 @@ $(document).ready(function(){
 				});
 				// console.log(dataset);
 
+
+				var dataArray = [];
+				var margin = {top: 50, right: 20, bottom: 20, left: 50};           
+				var w = 600 - margin.left - margin.right;
+				var h = 500 - margin.top - margin.bottom;
+
+				// define the svg element
+				var svg = d3.select("div#chart")
+					.append("svg")
+					.attr("width", w + margin.left + margin.right)
+					.attr("height", h + margin.top + margin.bottom);
+
 				// do some work on the dataset here
 				dataset.forEach(function(item){
 					sequence = sequence.then(function(){
@@ -65,29 +77,22 @@ $(document).ready(function(){
 						return stats;
 					}).then(function(){
 						console.log(stats);
+						// debugger;
 						// console.log(deletions);
 						// problem is that this is part of the loop, so additions/deletions arrays grow by 1 each iteration
 
 						// setup for the d3 chart
 						// dimensions setup
-						var dataArray = [];
+						
 						var additionsDeletions = [];
 						stats.forEach(function(d){ return additionsDeletions.push([d.additions,d.deletions]);});
 						var flattened = additionsDeletions.reduce(function(a,b){ return a.concat(b); });
 
-						var margin = {top: 20, right: 20, bottom: 20, left: 40};           
-						var w = 600 - margin.left - margin.right;
-						var h = 500 - margin.top - margin.bottom;
-
-						// define the svg element
-						var svg = d3.select("div#chart")
-							.append("svg")
-							.attr("width", w + margin.left + margin.right)
-							.attr("height", h + margin.top + margin.bottom);
+						
 
 						// define the scales
 						var xScale = d3.scale.ordinal()
-							.domain(dataArray.map(function(d){ return d.id; }))
+							.domain(stats.map(function(d){ return d.id; }))
 							.rangeRoundBands([margin.left, w], 0.5);
 
 						var yScale = d3.scale.linear()
@@ -112,7 +117,26 @@ $(document).ready(function(){
 							.attr("transform","translate(" + margin.left + ",0)")
 							.call(yAxis);
 
+						// add the y axis label
+						svg.append("text")
+							.attr("class", "y axis label")
+							.attr("text-anchor", "middle")
+							.attr("transform", "translate(15," + (h / 2) + ")rotate(-90)")
+							.text("Lines of code added/deleted");
 
+						// add the x axis label
+						svg.append("text")
+							.attr("class", "x axis label")
+							.attr("text-anchor", "middle")
+							.attr("transform", "translate(" + (w / 2) + "," + (h + (margin.bottom / 2) + 10) + ")")
+							.text("Commit ID");
+
+						// add a title to the chart
+						svg.append("text")
+							.attr("class", "chartTitle")
+							.attr("text-anchor", "middle")
+							.attr("transform", "translate(" + (w / 2) + ",20)")
+							.text("GitHub Repo");
 
 
 						// the dynamic stuff
@@ -127,11 +151,11 @@ $(document).ready(function(){
 						yAxis.scale(yScale);
 
 						// create bars
-						barsUp = svg.selectAll("rect").data(stats);
-						barsDown = svg.selectAll("rect").data(stats);
+						bars = svg.selectAll("rect").data(stats);
+						// barLabels = svg.selectAll("text").data(stats);
 
 						// add new bars
-						barsUp.enter()
+						bars.enter()
 							.append("rect")
 							.attr("x", function(d,i){
 								return xScale(d.id);
@@ -148,7 +172,7 @@ $(document).ready(function(){
 							})
 							.attr("fill","steelblue");
 
-						barsDown.enter()
+						bars.enter()
 							.append("rect")
 							.attr("x", function(d,i){
 								return xScale(d.id);
@@ -164,9 +188,43 @@ $(document).ready(function(){
 							})
 							.attr("fill","indianred");
 
-						// remove bars as necessary
+						// update the bars
+						bars.transition()
+					    .duration(750)
+					    .attr("x", function(d,i) {
+					      return xScale(d.id);
+					    })
+					    .attr("width", xScale.rangeBand());
 
-						// bars update and transition
+					  // barsDown.transition()
+					  //   .duration(750)
+					  //   .attr("x", function(d,i) {
+					  //     return xScale(d.id);
+					  //   })
+					  //   .attr("y", function(d) {
+					  //     return yScale(0);
+					  //   })
+					  //   .attr("width", xScale.rangeBand())
+					  //   .attr("height", function(d) {
+					  //     return yScale(0) - yScale(-d.deletions);
+					  //   });
+
+						// add commit id labels
+						// barLabels.enter()
+						// 	.append("text")
+						// 	.attr("x",function(d,i){
+						// 		return xScale(d.id);
+						// 	})
+						// 	.attr("width", function(d,i) {
+						// 		return xScale.rangeBand();
+						// 	})
+						// 	.attr("y",h)
+						// 	.attr("text-anchor","middle")
+						// 	.text(function(d){
+						// 		return d.id;
+						// 	});
+
+
 
 						// update the axes on the charts
 						svg.select("#xaxis")
@@ -178,6 +236,12 @@ $(document).ready(function(){
 							.transition()
 							.duration(1000)
 							.call(yAxis);
+
+						var repo = $("#reponame").val();
+
+						// update the title
+						svg.select(".chartTitle")
+							.text(repo);
 
 					});
 				});

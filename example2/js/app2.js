@@ -1,6 +1,6 @@
 // array of events
 var stats = [
-	{id: "2985400682", additions: 323, deletions: -149},
+	{id: "2985400682", additions: 323, deletions: -9},
 	{id: "2985397832", additions: 45, deletions: -46},
 	{id: "2984031811", additions: 12, deletions: -17},
 	{id: "2984018363", additions: 111, deletions: -80},
